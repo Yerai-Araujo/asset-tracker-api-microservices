@@ -71,9 +71,7 @@ void shouldCalculateTotalValue() {
 
     Asset btc = new Asset("BTC", AssetType.CRYPTO, AssetUnit.BTC);
 
-    PortfolioItem item = new PortfolioItem(portfolio, btc, BigDecimal.valueOf(2));
-
-    portfolio.getItems().add(item);
+    portfolio.addAsset(btc, BigDecimal.valueOf(2));
 
     when(portfolioRepository.findByUserId(userId))
             .thenReturn(Optional.of(portfolio));

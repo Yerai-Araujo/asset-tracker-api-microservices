@@ -47,7 +47,7 @@ public class Portfolio {
     }
 
     public Set<PortfolioItem> getItems() {
-        return Collections.unmodifiableSet(items);
+        return this.items;
     }
 
     public void addAsset(Asset asset, BigDecimal quantity) {
