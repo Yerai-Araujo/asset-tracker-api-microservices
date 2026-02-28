@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.at.asset_tracker.portfolio.domain.model.enums.AssetType;
 import com.at.asset_tracker.market.domain.model.MarketPriceProvider;
 import com.at.asset_tracker.market.domain.exception.MarketPriceProviderException;
 
@@ -25,12 +24,12 @@ public class MetalpriceApiMarketPriceProvider implements MarketPriceProvider {
     }
 
     @Override
-    public boolean supports(AssetType type) {
-        return type == AssetType.METAL;
+    public boolean supports(String type) {
+        return type.equals("METAL");
     }
 
     @Override
-    public BigDecimal getCurrentPrice(String symbol, AssetType type) {
+    public BigDecimal getCurrentPrice(String symbol, String type) {
 
         try {
             Map<?, ?> response = marketWebClient.get()

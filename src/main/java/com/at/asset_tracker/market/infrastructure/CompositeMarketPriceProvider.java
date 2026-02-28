@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-import com.at.asset_tracker.portfolio.domain.model.enums.AssetType;
 import com.at.asset_tracker.market.domain.model.MarketPriceProvider;
 import com.at.asset_tracker.market.domain.exception.MarketPriceProviderException;
 
@@ -21,12 +20,12 @@ public class CompositeMarketPriceProvider implements MarketPriceProvider {
     }
 
     @Override
-    public boolean supports(AssetType type) {
+    public boolean supports(String type) {
         return true;
     }
 
 
-    public BigDecimal getCurrentPrice(String symbol, AssetType type) {
+    public BigDecimal getCurrentPrice(String symbol, String type) {
 
         return providers.stream()
                 .filter(p -> p.supports(type))

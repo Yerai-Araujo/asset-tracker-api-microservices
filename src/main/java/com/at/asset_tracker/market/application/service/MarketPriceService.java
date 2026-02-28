@@ -2,14 +2,12 @@ package com.at.asset_tracker.market.application.service;
 
 import java.math.BigDecimal;
 
-import org.apache.catalina.webresources.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.at.asset_tracker.market.domain.exception.MarketPriceProviderException;
 import com.at.asset_tracker.market.infrastructure.CompositeMarketPriceProvider;
-import com.at.asset_tracker.portfolio.domain.model.enums.AssetType;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 
@@ -27,11 +25,11 @@ public class MarketPriceService {
     @Cacheable(value = "marketPrices", key = "#symbol + '_' + #type")
     @CircuitBreaker(name = "marketPriceCB", fallbackMethod = "fallbackPrice")
     @Retry(name = "marketPriceRetry")
-    public BigDecimal getCurrentPrice(String symbol, AssetType type) {
+    public BigDecimal getCurrentPrice(String symbol, String type) {
         return provider.getCurrentPrice(symbol, type);
     }
 
-    public BigDecimal fallbackPrice(String symbol, AssetType type, Throwable t) {
+    public BigDecimal fallbackPrice(String symbol, String type, Throwable t) {
 
     BigDecimal cached = cacheManager
             .getCache("marketPrices")

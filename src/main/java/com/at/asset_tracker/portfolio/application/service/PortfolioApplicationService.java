@@ -66,7 +66,7 @@ public class PortfolioApplicationService {
                             .orElseThrow(() -> new RuntimeException("Asset not found"));
 
                     BigDecimal price = marketPriceService
-                            .getCurrentPrice(asset.symbol(), asset.type());
+                            .getCurrentPrice(asset.symbol(), asset.type().name());
 
                     return price.multiply(item.quantity());
                 })
