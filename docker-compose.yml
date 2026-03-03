@@ -31,7 +31,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   user-service:
-    build: ../asset-tracker-user-service
+    build: ../asset-tracker-api-user-service
     container_name: user_service
     restart: always
     depends_on:
@@ -45,7 +45,7 @@ services:
       SPRING_DATASOURCE_USERNAME: user_service
 
   portfolio-service:
-    build: ../asset-tracker-portfolio-service
+    build: ../asset-tracker-api-portfolio-service
     container_name: portfolio_service
     restart: always
     depends_on:
@@ -61,7 +61,7 @@ services:
       MARKET_SERVICE_URL: http://market-service:8080
 
   market-service:
-    build: ../asset-tracker-market-service
+    build: ../asset-tracker-api-market-service
     container_name: market_service
     restart: always
     ports:
