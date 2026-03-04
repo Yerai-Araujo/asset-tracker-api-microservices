@@ -55,6 +55,7 @@ services:
     depends_on:
       - postgres-portfolio
       - market-service
+      - user-service
     ports:
       - "8080:8080"
     env_file:
@@ -63,6 +64,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-portfolio:5432/asset_tracker
       SPRING_DATASOURCE_USERNAME: asset_user
       MARKET_SERVICE_URL: http://market-service:8080
+      USER_SERVICE_URL: http://user-service:8080
 
   market-service:
     build: ../asset-tracker-api-market-service
