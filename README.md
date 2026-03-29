@@ -8,3 +8,4 @@ Infra de la API de backend para rastrear y valorar activos digitales y físicos
 | Portfolio Service | [🔗 Ver repo](https://github.com/Yerai-Araujo/asset-tracker-api-portfolio-service) |
 | User Service      | [🔗 Ver repo](https://github.com/Yerai-Araujo/asset-tracker-api-user-service) |
 | Market Service    | [🔗 Ver repo](https://github.com/Yerai-Araujo/asset-tracker-api-market-service) |
+| Read Model Service    | [🔗 Ver repo](https://github.com/Yerai-Araujo/asset-tracker-api-read-model-service) |

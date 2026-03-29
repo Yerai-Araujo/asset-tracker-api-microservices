@@ -12,6 +12,14 @@ services:
     environment:
       POSTGRES_USER: user_service
       POSTGRES_DB: user_db
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "max_wal_senders=10"
+      - "-c"
+      - "max_replication_slots=10"
     ports:
       - "5433:5432"
     volumes:
@@ -39,6 +47,7 @@ services:
     restart: always
     depends_on:
       - postgres-user
+      - kafka
     ports:
       - "8081:8080"
     env_file:
@@ -46,6 +55,9 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-user:5432/user_db
       SPRING_DATASOURCE_USERNAME: user_service
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    volumes:
+      - ../asset-tracker-api-user-service:/app
 
   portfolio-service:
     build: ../asset-tracker-api-portfolio-service
@@ -75,7 +87,91 @@ services:
       - "8082:8080"
     env_file:
       - .env
+  
+  read-model-service:
+    build: ../asset-tracker-api-read-model-service
+    mem_limit: 512m
+    container_name: read_model_service
+    restart: always
+    depends_on:
+      - kafka
+      - mongo
+    ports:
+      - "8085:8080"
+      - "5005:5005"
+    env_file:
+      - .env
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_CONSUMER_GROUP_ID: read-model-service
+      SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET: earliest
+      JAVA_TOOL_OPTIONS: >-
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+     
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      CLUSTER_ID: k-axtd9gTyy2vjWt_Ra1gQ
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+  
+  connect:
+    image: debezium/connect:2.6
+    container_name: connect
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka
+      - postgres-user
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: connect-cluster
+      CONFIG_STORAGE_TOPIC: connect-configs
+      OFFSET_STORAGE_TOPIC: connect-offsets
+      STATUS_STORAGE_TOPIC: connect-status
+      CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      STATUS_STORAGE_REPLICATION_FACTOR: 1
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      KEY_CONVERTER_SCHEMAS_ENABLE: false
+      VALUE_CONVERTER_SCHEMAS_ENABLE: false
+      LOGGING_LEVEL: INFO
+      CONNECT_PLUGIN_PATH: /kafka/connect
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
+    volumes:
+      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - mongo_data:/data/db
 
 volumes:
   postgres_user_data:
   postgres_data:
+  mongo_data:
+  kafka_data:
